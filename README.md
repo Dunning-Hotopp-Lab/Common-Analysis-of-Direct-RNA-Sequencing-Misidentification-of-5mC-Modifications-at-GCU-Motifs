@@ -59,7 +59,7 @@ for i in *GCU.dampened_fraction_modified_reads.5mC.plus.wig; do wig2bed-typical 
 for i in *HCV.dampened_fraction_modified_reads.5mC.plus.wig; do wig2bed-typical < $i | awk -v motif="Non-GCU" '{print motif"\t"$5}' > $i.bed; done
 for i in *dampened_fraction_modified_reads.plus.wig; do wig2bed-typical < $i | awk -v motif="All" '{print motif"\t"$5}' > $i.bed; done
 ```
-Add a column with the sample name, then combine all 'final' files in a sinlge file for R
+Add a column with the sample name, then combine all 'final' files in a single file for R
 ```
 for i in 20190701_Bmalayi*.bed; do awk -v sample="Bmalayi" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
 for i in Calbicans*.bed; do awk -v sample="Calbicans" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
