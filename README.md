@@ -22,54 +22,59 @@ Kaylee Watson<br />
 
 ### Motif Detection in Top 1000 Modified Positions
 
+
+
+
+
+### Modified Fraction Boxplots
 #### Tombo - Dampened Fraction of Modified Reads
 
-#### WIG file to BED file
+```
+TOMBO_BIN_DIR = /local/projects-t3/JULIE/packages/miniconda3/envs/epitombo/bin
+STATS_FILE = path_to_stats_file
+FILE_PREFIX = sample_prefix
+REF = path_to_reference_transcriptome
+
+"$TOMBO_BIN_DIR"/tombo text_output browser_files --genome-fasta "$REF" --statistics-filename "$STATS_FILE" --browser-file-basename "$FILE_PREFIX" --file-types dampened_fraction
+
+"$TOMBO_BIN_DIR"/tombo text_output browser_files --genome-fasta "$REF" --statistics-filename "$STATS_FILE" --browser-file-basename "$FILE_PREFIX" --motif-descriptions GCT:2:5mC --file-types dampened_fraction
+
+"$TOMBO_BIN_DIR"/tombo text_output browser_files --genome-fasta "$REF" --statistics-filename "$STATS_FILE" --browser-file-basename "$FILE_PREFIX" --motif-descriptions HCV:2:5mC --file-types dampened_fraction
+```
+
+#### Format WIG file
 
 Genes/regions where reads did not map will have blank space after the WIG header. This (and the header for that region) needs to be removed.
 
 ```
-WIG_FILE = path_to_wig_file
-BED_FILE = name_of_bed_file
+WIG_FILE = wig_file
+
 # the wig header has "=" in it, so this command finds lines with "=", and if the next line is blank, removes both
 sed -i '$!N;/=.*\n$/d;P;D' $WIG_FILE
-
-# change WIG file to BED file format
-wig2bed-typical < "$WIG_FILE" > "$BED_FILE"
 ```
 
-### Modified Fraction Boxplots
-File path variables
+Change the WIG files to BED file format, print only the modified fraction, and add a column for the 3-mer
 ```
-GCU_DIR=/local/projects-t3/RDEPI/GCU_tombo
-BMALAYI_ALL=$GCU_DIR/Bmalayi/Bmalayi.dampened_fraction_modified_reads.plus.bed
-BMALAYI_NON_GCU=$GCU_DIR/Bmalayi/Bmalayi_HCV.dampened_fraction_modified_reads.5mC.plus.bed
-BMALAYI_GCU=$GCU_DIR/Bmalayi/Bmalayi_GCU.dampened_fraction_modified_reads.5mC.plus.bed
+for i in *GCU.dampened_fraction_modified_reads.5mC.plus.wig; do wig2bed-typical < $i | awk -v motif="GCU" '{print motif"\t"$5}' > $i.bed; done
+for i in *HCV.dampened_fraction_modified_reads.5mC.plus.wig; do wig2bed-typical < $i | awk -v motif="Non-GCU" '{print motif"\t"$5}' > $i.bed; done
+for i in *dampened_fraction_modified_reads.plus.wig; do wig2bed-typical < $i | awk -v motif="All" '{print motif"\t"$5}' > $i.bed; done
+```
+Add a column with the sample name, then combine all 'final' files in a sinlge file for R
+```
+for i in 20190701_Bmalayi*.bed; do awk -v sample="Bmalayi" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in Calbicans*.bed; do awk -v sample="Calbicans" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in Dananassae*.bed; do awk -v sample="Dananassae" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20220727_Ecoli*.bed; do awk -v sample="Ecoli" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20220512_SINV_IVT*.bed; do awk -v sample="SINV_IVT" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20181026_JW18*.bed; do awk -v sample="JW18_SINV" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
 
-DANA_ALL=$GCU_DIR/Dananassae/Dananassae.dampened_fraction_modified_reads.plus.bed
-DANA_NON_GCU=$GCU_DIR/Dananassae/Dananassae_HCV.dampened_fraction_modified_reads.5mC.plus.bed
-DANA_GCU=$GCU_DIR/Dananassae/Dananassae_GCU.dampened_fraction_modified_reads.5mC.plus.bed
-
-CALBICANS_ALL=$GCU_DIR/Calbicans/Calbicans.dampened_fraction_modified_reads.plus.bed
-CALBICANS_NON_GCU=$GCU_DIR/Calbicans/Calbicans_HCV.dampened_fraction_modified_reads.5mC.plus.bed
-CALBICANS_GCU=$GCU_DIR/Calbicans/Calbicans_GCU.dampened_fraction_modified_reads.5mC.plus.bed
-
-ECOLI_ALL=$GCU_DIR/K12_LB/K12_LB.dampened_fraction_modified_reads.plus.bed
-ECOLI_NON_GCU=$GCU_DIR/K12_LB/K12_LB_HCV.dampened_fraction_modified_reads.5mC.plus.bed
-ECOLI_GCU=$GCU_DIR/K12_LB/K12_LB_GCU.dampened_fraction_modified_reads.5mC.plus.bed
-
-SINV_ALL=$GCU_DIR/SINV/JW18_SINV.dampened_fraction_modified_reads.plus.bed
-SINV_NON_GCU=$GCU_DIR/SINV/JW18_HCV.dampened_fraction_modified_reads.5mC.plus.bed
-SINV_GCU=$GCU_DIR/SINV/JW18_GCU.dampened_fraction_modified_reads.5mC.plus.bed
-
-IVT_SINV_ALL=$GCU_DIR/SINV/SINV_IVT.dampened_fraction_modified_reads.plus.bed
-IVT_SINV_NON_GCU=$GCU_DIR/SINV/IVT_HCV.dampened_fraction_modified_reads.5mC.plus.bed
-IVT_SINV_GCU=$GCU_DIR/SINV/IVT_GCU.dampened_fraction_modified_reads.5mC.plus.bed
+cat final* > modified_fractions_all.tsv
 ```
 
-Command to run R script:
+#### Plot Modified Fractions
+Command to run R script on final concatenated file:
 ```
-~/scripts/boxplot_mods_wrap.r $BMALAYI_ALL $BMALAYI_NON_GCU $BMALAYI_GCU $DANA_ALL $DANA_NON_GCU $DANA_GCU $CALBICANS_ALL $CALBICANS_NON_GCU $CALBICANS_GCU $ECOLI_ALL $ECOLI_NON_GCU $ECOLI_GCU $SINV_ALL $SINV_NON_GCU $SINV_GCU $IVT_SINV_ALL $IVT_SINV_NON_GCU $IVT_SINV_GCU
+~/scripts/boxplot_mods_multisample.r modified_fractions_all.tsv
 ```
 
 
