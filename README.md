@@ -22,7 +22,10 @@ Kaylee Watson<br />
 
 ### Motif Detection in Top 1000 Modified Positions
 
-
+#### Change all T's (from Tombo output) to U's in fasta
+```
+perl -pe 'tr/tT/uU/ unless(/>/)' < file.fasta > file.RNA.fasta
+```
 
 
 
