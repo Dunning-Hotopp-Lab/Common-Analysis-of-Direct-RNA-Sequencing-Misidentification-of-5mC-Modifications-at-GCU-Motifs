@@ -1,6 +1,6 @@
 # Common Analysis of Direct RNA SequencinG CUrrently leads to Misidentification of 5-Methylcytosine Modifications
 Kaylee Watson<br />
-01 March 2023
+
 
 ## Table of Contents
 
@@ -12,25 +12,33 @@ Kaylee Watson<br />
 [• Modified Fraction Boxplots](https://github.com/kayleewatson/GCU-Paper/new/main?readme=1#modified-fraction-boxplots)<br />
 [• Modified Fraction Density Plots - Sindbis virus](https://github.com/kayleewatson/GCU-Paper/new/main?readme=1#modified-fraction-density-plots---sindbis-virus)<br />
 
-### Basecalling ONT Reads with Guppy
+## Basecalling ONT Reads with Guppy
+#### Command for basecalling RNA using Guppy 6.4.2:
+```
+FAST5_DIR = path_to_fast5
+OUTPUT_DIR = output_directory_path
 
-### Mapping to Transcriptome References
+/usr/local/packages/guppy-6.4.2_gpu/bin/guppy_basecaller -x "cuda:0" --input_path "$FAST5_DIR" --save_path "$OUTPUT_DIR" --config rna_r9.4.1_70bps_hac.cfg --min_qscore 7 --records_per_fastq 10000000 --gpu_runners_per_device 8 --num_callers 1
+```
 
-### Sequencing Stats
 
-### Tombo Modification Detection - Alternative Model
+## Mapping to Transcriptome References
 
-### Motif Detection in Top 1000 Modified Positions
+## Sequencing Stats
 
-#### Change all T's (from Tombo output) to U's in fasta
+## Tombo Modification Detection - Alternative Model
+
+## Motif Detection in Top 1000 Modified Positions
+
+#### Change all T's (from Tombo output) to U's in fasta:
 ```
 perl -pe 'tr/tT/uU/ unless(/>/)' < file.fasta > file.RNA.fasta
 ```
 
 
 
-### Modified Fraction Boxplots
-#### Tombo - Dampened Fraction of Modified Reads
+## Modified Fraction Boxplots
+#### Tombo - Dampened Fraction of Modified Reads:
 
 ```
 TOMBO_BIN_DIR = /local/projects-t3/JULIE/packages/miniconda3/envs/epitombo/bin
@@ -47,7 +55,7 @@ REF = path_to_reference_transcriptome
 
 #### Format WIG file
 
-Genes/regions where reads did not map will have blank space after the WIG header. This (and the header for that region) needs to be removed.
+Genes/regions where reads did not map will have blank space after the WIG header. This (and the header for that region) needs to be removed:
 
 ```
 WIG_FILE = wig_file
@@ -56,13 +64,13 @@ WIG_FILE = wig_file
 sed -i '$!N;/=.*\n$/d;P;D' $WIG_FILE
 ```
 
-Change the WIG files to BED file format, print only the modified fraction, and add a column for the 3-mer
+Change the WIG files to BED file format, print only the modified fraction, and add a column for the 3-mer:
 ```
 for i in *GCU.dampened_fraction_modified_reads.5mC.plus.wig; do wig2bed-typical < $i | awk -v motif="GCU" '{print motif"\t"$5}' > $i.bed; done
 for i in *HCV.dampened_fraction_modified_reads.5mC.plus.wig; do wig2bed-typical < $i | awk -v motif="Non-GCU" '{print motif"\t"$5}' > $i.bed; done
 for i in *dampened_fraction_modified_reads.plus.wig; do wig2bed-typical < $i | awk -v motif="All" '{print motif"\t"$5}' > $i.bed; done
 ```
-Add a column with the sample name, then combine all 'final' files in a single file for R
+Add a column with the sample name, then combine all 'final' files in a single file for R:
 ```
 for i in 20190701_Bmalayi*.bed; do awk -v sample="Bmalayi" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
 for i in Calbicans*.bed; do awk -v sample="Calbicans" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
@@ -79,6 +87,60 @@ Command to run R script on final concatenated file:
 ```
 ~/scripts/boxplot_mods_multisample.r modified_fractions_all.tsv
 ```
+Package requirements:
+* ggplot2
 
+R script for boxplots:
+```
+#!/usr/bin/env Rscript
 
-### Modified Fraction Density Plots - Sindbis virus
+library(ggplot2)
+
+args = commandArgs(trailingOnly=TRUE)
+if (length(args)==0) {
+    stop("Please supply a filename", call.=FALSE)
+}
+
+cat("Gathering the data...\n")
+
+df <- read.delim(args[1], header=FALSE, sep="\t")
+df$V1 <- as.factor(df$V1)
+
+df_nozero <- df[(df$V3 > 0),]
+# removes all '0' modified fractions, so only nonzero fractions are plotted
+
+df_nozero$V2 <- factor(df_nozero$V2, levels = c("All", "Non-GCU", "GCU"))
+
+cat("Plotting...\n")
+
+jpeg("plot.jpeg", width=2000, height=550, units="px")
+# create a jpeg file with specified size and units
+
+ggplot(df_nozero, aes(x=V2, y=V3, fill=V2)) +
+geom_boxplot(outlier.size = 0.3) +
+scale_fill_manual(values=c("white","grey70","grey30")) +
+facet_grid(~factor(V1, levels=c("Bmalayi", "Dananassae",
+    "Calbicans", "Ecoli", "JW18_SINV", "SINV_IVT"))) +
+# create separate boxplot for each organism/sample in a specific order
+ylab("Fraction of\nReads Modified") +
+theme_bw() +
+labs(fill="                                                            ") +
+# use a large space for the legend title to shift the legend to the bottom right
+    theme(
+axis.title.y=element_text(size=45),
+axis.title.x=element_blank(),
+axis.text.x=element_blank(),
+axis.ticks.x = element_blank(),
+axis.text.y=element_text(size=35),
+strip.text.x = element_text(size=25),
+legend.text=element_text(size=50),
+legend.title=element_text(size=50),
+legend.position = "bottom",
+legend.direction = "horizontal",
+panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +
+scale_x_discrete(limits = c("All", "Non-GCU", "GCU"))
+
+invisible(dev.off())
+```
+
+## Modified Fraction Density Plots - Sindbis virus
