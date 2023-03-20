@@ -142,5 +142,7 @@ scale_x_discrete(limits = c("All", "Non-GCU", "GCU"))
 
 invisible(dev.off())
 ```
+#### Wilcoxon–Mann–Whitney test
+
 
 ## Modified Fraction Density Plots - Sindbis virus
