@@ -73,7 +73,7 @@ for i in *dampened_fraction_modified_reads.plus.wig; do wig2bed-typical < $i | a
 Add a column with the sample name, then combine all 'final' files in a single file for R:
 ```
 for i in 20190701_Bmalayi*.bed; do awk -v sample="Bmalayi" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in Calbicans*.bed; do awk -v sample="Calbicans" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20191024_Calbicans*.bed; do awk -v sample="Calbicans" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
 for i in Dananassae*.bed; do awk -v sample="Dananassae" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
 for i in 20220727_Ecoli*.bed; do awk -v sample="Ecoli" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
 for i in 20220512_SINV_IVT*.bed; do awk -v sample="SINV_IVT" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
