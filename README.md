@@ -58,6 +58,7 @@ REF = path_to_reference_transcriptome
 Genes/regions where reads did not map will have blank space after the WIG header. This (and the header for that region) needs to be removed:
 
 ```
+PATH=/usr/local/packages/bedops-2.4.36:"$PATH"
 WIG_FILE = wig_file
 
 # the wig header has "=" in it, so this command finds lines with "=", and if the next line is blank, removes both
@@ -80,6 +81,34 @@ for i in 20220512_SINV_IVT*.bed; do awk -v sample="SINV_IVT" '{print sample"\t"$
 for i in 20181026_JW18*.bed; do awk -v sample="JW18_SINV" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
 
 cat final* > modified_fractions_all.tsv
+```
+#### Filter by requiggled read depth of 10
+
+Run Tombo to output 'valid coverage' at every position
+```
+REF=path_to_reference
+STATS_FILE=path_to_stats_file
+FILE_PREFIX=name_of_output_file
+
+tombo text_output browser_files --genome-fasta "$REF" --statistics-filename "$STATS_FILE" --browser-file-basename "$FILE_PREFIX" --file-types valid_coverage
+```
+Remove blank lines and change wig file to bed file format
+```
+for i in *valid_coverage.plus.wig; do sed -i '$!N;/=.*\n$/d;P;D' $i; done
+for i in *valid_coverage.plus.wig; do wig2bed-typical < $i > $i.bed; done
+```
+Create BED file (with all columns) from dampened_fraction WIG file:
+```
+for i in *dampened_fraction_modified_reads.plus.wig; do sed -i '$!N;/=.*\n$/d;P;D' $i; done
+for i in *dampened_fraction*.plus.wig; do wig2bed-typical < $i > $i.bed; done
+```
+Remove lines in valid_coverage that have < 10 in the 5th column (depth column)
+```
+for i in *.valid_coverage.plus.wig.bed; do awk '{if($5>9) print}' > $i.filtered; done
+
+```
+Filter each bed file by valid_coverage file
+```
 ```
 
 #### Plot Modified Fractions
