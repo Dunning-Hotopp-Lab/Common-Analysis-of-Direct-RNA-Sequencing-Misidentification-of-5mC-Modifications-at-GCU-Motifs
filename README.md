@@ -104,12 +104,32 @@ for i in *dampened_fraction*.plus.wig; do wig2bed-typical < $i > $i.bed; done
 ```
 Remove lines in valid_coverage that have < 10 in the 5th column (depth column)
 ```
-for i in *.valid_coverage.plus.wig.bed; do awk '{if($5>9) print}' > $i.filtered; done
-
+for i in *.valid_coverage.plus.wig.bed; do awk '{if($5>9) print}' $i > $i.filtered; done
 ```
 Filter each bed file by valid_coverage file
 ```
+FILT_COV=filtered_valid_coverage_file
+DAMP_FRAC=dampened_fraction_file
+FILT_FRAC=filtered_dampened_fraction_file
+
+awk 'NR==FNR{a[$2]=1;next}a[$2]' $FILT_COV $DAMP_FRAC > $FILT_FRAC
 ```
+Create final BED files for boxplots from filtered files
+```
+for i in *all.dampened_fraction_filtered.bed; do awk -v motif="All" '{print motif"\t"$5}' $i > $i.formatted; done
+for i in *HCV.dampened_fraction_filtered.bed; do awk -v motif="Non-GCU" '{print motif"\t"$5}' $i > $i.formatted; done
+for i in *GCU.dampened_fraction_filtered.bed; do awk -v motif="GCU" '{print motif"\t"$5}' $i > $i.formatted; done
+```
+Add a column with the sample name, then combine all 'final' files in a single file for R:
+```
+for i in 20190701_Bmalayi*.formatted; do awk -v sample="Bmalayi" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20191024_Calbicans*.formatted; do awk -v sample="Calbicans" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in Dananassae*.formatted; do awk -v sample="Dananassae" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20220727_Ecoli*.formatted; do awk -v sample="Ecoli" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20220512_SINV_IVT*.formatted; do awk -v sample="SINV_IVT" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20181026_JW18*.formatted; do awk -v sample="JW18_SINV" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+
+cat final* > modified_fractions_all.tsv
 
 #### Plot Modified Fractions
 Command to run R script on final concatenated file:
