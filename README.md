@@ -49,8 +49,6 @@ REF = path_to_reference_transcriptome
 "$TOMBO_BIN_DIR"/tombo text_output browser_files --genome-fasta "$REF" --statistics-filename "$STATS_FILE" --browser-file-basename "$FILE_PREFIX" --file-types dampened_fraction
 
 "$TOMBO_BIN_DIR"/tombo text_output browser_files --genome-fasta "$REF" --statistics-filename "$STATS_FILE" --browser-file-basename "$FILE_PREFIX" --motif-descriptions GCT:2:5mC --file-types dampened_fraction
-
-"$TOMBO_BIN_DIR"/tombo text_output browser_files --genome-fasta "$REF" --statistics-filename "$STATS_FILE" --browser-file-basename "$FILE_PREFIX" --motif-descriptions HCV:2:5mC --file-types dampened_fraction
 ```
 
 #### Format WIG file
@@ -64,24 +62,6 @@ WIG_FILE = wig_file
 # the wig header has "=" in it, so this command finds lines with "=", and if the next line is blank, removes both
 sed -i '$!N;/=.*\n$/d;P;D' $WIG_FILE
 ```
-
-Change the WIG files to BED file format, print only the modified fraction, and add a column for the 3-mer:
-```
-for i in *GCU.dampened_fraction_modified_reads.5mC.plus.wig; do wig2bed-typical < $i | awk -v motif="GCU" '{print motif"\t"$5}' > $i.bed; done
-for i in *HCV.dampened_fraction_modified_reads.5mC.plus.wig; do wig2bed-typical < $i | awk -v motif="Non-GCU" '{print motif"\t"$5}' > $i.bed; done
-for i in *dampened_fraction_modified_reads.plus.wig; do wig2bed-typical < $i | awk -v motif="All" '{print motif"\t"$5}' > $i.bed; done
-```
-Add a column with the sample name, then combine all 'final' files in a single file for R:
-```
-for i in 20190701_Bmalayi*.bed; do awk -v sample="Bmalayi" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in 20191024_Calbicans*.bed; do awk -v sample="Calbicans" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in Dananassae*.bed; do awk -v sample="Dananassae" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in 20220727_Ecoli*.bed; do awk -v sample="Ecoli" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in 20220512_SINV_IVT*.bed; do awk -v sample="SINV_IVT" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in 20181026_JW18*.bed; do awk -v sample="JW18_SINV" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-
-cat final* > modified_fractions_all.tsv
-```
 #### Filter by requiggled read depth
 
 Run Tombo to output 'valid coverage' at every position
@@ -92,7 +72,7 @@ FILE_PREFIX=name_of_output_file
 
 tombo text_output browser_files --genome-fasta "$REF" --statistics-filename "$STATS_FILE" --browser-file-basename "$FILE_PREFIX" --file-types valid_coverage
 ```
-Remove blank lines and change wig file to bed file format
+Remove blank lines and change WIG file to BED file format
 ```
 for i in *valid_coverage.plus.wig; do sed -i '$!N;/=.*\n$/d;P;D' $i; done
 for i in *valid_coverage.plus.wig; do wig2bed-typical < $i > $i.bed; done
