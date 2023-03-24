@@ -82,7 +82,7 @@ for i in 20181026_JW18*.bed; do awk -v sample="JW18_SINV" '{print sample"\t"$1"\
 
 cat final* > modified_fractions_all.tsv
 ```
-#### Filter by requiggled read depth of 10
+#### Filter by requiggled read depth
 
 Run Tombo to output 'valid coverage' at every position
 ```
@@ -102,9 +102,13 @@ Create BED file (with all columns) from dampened_fraction WIG file:
 for i in *dampened_fraction_modified_reads.plus.wig; do sed -i '$!N;/=.*\n$/d;P;D' $i; done
 for i in *dampened_fraction*.plus.wig; do wig2bed-typical < $i > $i.bed; done
 ```
-Remove lines in valid_coverage that have < 10 in the 5th column (depth column)
+VIRUS (low depth samples): Remove lines in valid_coverage that have < 10 in the 5th column (depth column)
 ```
 for i in *.valid_coverage.plus.wig.bed; do awk '{if($5>9) print}' $i > $i.filtered; done
+```
+ALL OTHERS (B. malayi, D. ananassae, C. albicans, E. coli): Remove lines in valid_coverage that have < 100 in the 5th column
+```
+for i in *.valid_coverage.plus.wig.bed; do awk '{if($5>99) print}' $i > $i.filtered; done
 ```
 Filter each bed file by valid_coverage file
 ```
