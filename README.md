@@ -51,17 +51,6 @@ REF = path_to_reference_transcriptome
 "$TOMBO_BIN_DIR"/tombo text_output browser_files --genome-fasta "$REF" --statistics-filename "$STATS_FILE" --browser-file-basename "$FILE_PREFIX" --motif-descriptions GCT:2:5mC --file-types dampened_fraction
 ```
 
-#### Format WIG file
-
-Genes/regions where reads did not map will have blank space after the WIG header. This (and the header for that region) needs to be removed:
-
-```
-PATH=/usr/local/packages/bedops-2.4.36:"$PATH"
-WIG_FILE = wig_file
-
-# the wig header has "=" in it, so this command finds lines with "=", and if the next line is blank, removes both
-sed -i '$!N;/=.*\n$/d;P;D' $WIG_FILE
-```
 #### Filter by requiggled read depth
 
 Run Tombo to output 'valid coverage' at every position
@@ -72,15 +61,16 @@ FILE_PREFIX=name_of_output_file
 
 tombo text_output browser_files --genome-fasta "$REF" --statistics-filename "$STATS_FILE" --browser-file-basename "$FILE_PREFIX" --file-types valid_coverage
 ```
-Remove blank lines and change WIG file to BED file format
+Genes/regions where reads did not map will have blank space after the WIG header. This (and the header for that region) needs to be removed, then create BED file (with all columns) from WIG file:
 ```
+PATH=/usr/local/packages/bedops-2.4.36:"$PATH"
+
+for i in *dampened_fraction_modified_reads.plus.wig; do sed -i '$!N;/=.*\n$/d;P;D' $i; done
+# the wig header has "=" in it, so this command finds lines with "=", and if the next line is blank, removes both
+for i in *dampened_fraction*.plus.wig; do wig2bed-typical < $i > $i.bed; done
+
 for i in *valid_coverage.plus.wig; do sed -i '$!N;/=.*\n$/d;P;D' $i; done
 for i in *valid_coverage.plus.wig; do wig2bed-typical < $i > $i.bed; done
-```
-Create BED file (with all columns) from dampened_fraction WIG file:
-```
-for i in *dampened_fraction_modified_reads.plus.wig; do sed -i '$!N;/=.*\n$/d;P;D' $i; done
-for i in *dampened_fraction*.plus.wig; do wig2bed-typical < $i > $i.bed; done
 ```
 VIRUS (low depth samples): Remove lines in valid_coverage that have < 10 in the 5th column (depth column)
 ```
