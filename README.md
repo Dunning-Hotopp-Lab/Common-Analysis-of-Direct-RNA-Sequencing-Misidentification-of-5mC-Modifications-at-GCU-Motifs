@@ -130,6 +130,7 @@ for i in 20220512_SINV_IVT*.formatted; do awk -v sample="SINV_IVT" '{print sampl
 for i in 20181026_JW18*.formatted; do awk -v sample="JW18_SINV" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
 
 cat final* > modified_fractions_all.tsv
+```
 
 #### Plot Modified Fractions
 Command to run R script on final concatenated file:
