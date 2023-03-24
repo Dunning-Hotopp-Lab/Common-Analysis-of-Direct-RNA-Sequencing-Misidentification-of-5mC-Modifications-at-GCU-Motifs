@@ -126,14 +126,18 @@ for i in *GCU.dampened_fraction_filtered.bed; do awk -v motif="GCU" '{print moti
 ```
 Add a column with the sample name, then combine all 'final' files in a single file for R:
 ```
-for i in 20190701_Bmalayi*.formatted; do awk -v sample="Bmalayi" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in 20191024_Calbicans*.formatted; do awk -v sample="Calbicans" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in Dananassae*.formatted; do awk -v sample="Dananassae" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in 20220727_Ecoli*.formatted; do awk -v sample="Ecoli" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in 20220512_SINV_IVT*.formatted; do awk -v sample="SINV_IVT" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
-for i in 20181026_JW18*.formatted; do awk -v sample="JW18_SINV" '{print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20190701_Bmalayi*.formatted; do awk -v sample="Bmalayi" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20191024_Calbicans*.formatted; do awk -v sample="Calbicans" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in Dananassae*.formatted; do awk -v sample="Dananassae" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20220727_Ecoli*.formatted; do awk -v sample="Ecoli" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20220512_SINV_IVT*.formatted; do awk -v sample="SINV_IVT" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in 20181026_JW18*.formatted; do awk -v sample="JW18_SINV" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
 
 cat final* > modified_fractions_all.tsv
+```
+Check number of positions analyzed for each motif:
+```
+for i in final*; do wc -l $i; done
 ```
 
 #### Plot Modified Fractions
