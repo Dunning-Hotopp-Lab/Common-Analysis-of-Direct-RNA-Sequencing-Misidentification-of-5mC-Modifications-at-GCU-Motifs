@@ -37,10 +37,10 @@ samtools view -bhF 2308 $SAM_FILE | samtools sort -o $BAM_FILE
 
 ## Sequencing Stats
 
-### Determine total reads sequenced using FASTQ output from basecalling
+### Determine total reads mapped
 ```
-FASTQ_FILE=path_to_fastq
-awk 'NR%4==1' $FASTQ_FILE | wc -l 
+BAM_FILE=path_to_BAM_file
+samtools view $BAM_FILE | wc -l 
 ```
 
 ### Mbp mapped, N50, max read length
