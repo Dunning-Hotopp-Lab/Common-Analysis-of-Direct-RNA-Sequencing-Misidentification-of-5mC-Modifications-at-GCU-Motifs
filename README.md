@@ -23,9 +23,6 @@ OUTPUT_DIR = output_directory_path
 
 
 ## Mapping to Transcriptome References
-
-## Sequencing Stats
-
 Map to transcriptome reference with minimap2 (since Tombo uses transcriptome)
 ```
 REF=path_to_transcriptome_ref
@@ -38,6 +35,15 @@ samtools view -bhF 2308 $SAM_FILE | samtools sort -o $BAM_FILE
 #filter out reads that are not primary alignments
 ```
 
+## Sequencing Stats
+
+### Determine total reads sequenced using FASTQ output from basecalling
+```
+FASTQ_FILE=path_to_fastq
+awk ‘NR%4==1’ $FASTQ_FILE | wc -l 
+```
+
+### Mbp mapped, N50, max read length
 Remove any soft-clipped regions for more accurate stats (removes ONT adapter regions)
 ```
 JVARKIT=path_to_jvarkit
@@ -56,6 +62,37 @@ samtools fastq $BAM_OUT > $FASTQ_OUT
 # create FASTQ from BAM file to run statistics
 
 seqkit stats -T -a -o $STATS_FILE < $FASTQ_OUT
+```
+
+To get percent mapped, pull stats from original fastq file and then use sum_len column from both stats files to get percentage
+```
+FASTQ=path_to_original_fastq
+STATS_FILE=name_of_stats_output
+
+seqkit stats -T -a -o $STATS_FILE < $FASTQ
+```
+
+### Percent rRNA
+Filter gff file for rRNA regions (column 3)
+```
+GFF=path_to_gff
+GFF_RRNA=name_of_rRNA_gff
+
+awk '$3 ~ /rRNA/ { print }' $GFF > $GFF_RRNA
+```
+Filter BAM file for reads that mapped to rRNA and get number of reads from that
+```
+PATH=/usr/local/packages/bedops-2.4.36:"$PATH"
+BED=name_of_BED_file
+GFF_RRNA=path_to_rRNA_gff
+BAM=path_to_BAM_file
+BAM_OUT=name_of_BAM_output
+
+gff2bed < $GFF_RRNA > $BED
+# Convert gff to BED file
+
+samtools view -L $BED $BAM -o $BAM_OUT
+samtools view $BAM_OUT | wc -l
 ```
 
 ## Tombo Modification Detection - Alternative Model
