@@ -26,6 +26,38 @@ OUTPUT_DIR = output_directory_path
 
 ## Sequencing Stats
 
+Map to transcriptome reference with minimap2 (since Tombo uses transcriptome)
+```
+REF=path_to_transcriptome_ref
+FASTQ=path_to_fastq
+SAM_FILE=name_of_SAM_output
+
+
+BAM_FILE=name_of_BAM_output
+samtools view -bhF 2308 $SAM_FILE | samtools sort -o $BAM_FILE
+#filter out reads that are not primary alignments
+```
+
+Remove any soft-clipped regions for more accurate stats (removes ONT adapter regions)
+```
+JVARKIT=path_to_jvarkit
+BAM_FILE=path_to_BAM_input
+BAM_OUT=name_of_BAM_output
+/usr/local/packages/jdk-8u171/bin/java  -Xmx10g -jar $JVARKIT/dist/biostar84452.jar -o $BAM_OUT $BAM_FILE
+```
+
+Get statistics
+```
+BAM_OUT=(same as previous step)
+FASTQ_OUT=name_of_fastq_output
+STATS_FILE=name_of_stats_output
+
+samtools fastq $BAM_OUT > $FASTQ_OUT
+# create FASTQ from BAM file to run statistics
+
+seqkit stats -T -a -o $STATS_FILE < $FASTQ_OUT
+```
+
 ## Tombo Modification Detection - Alternative Model
 
 ## Motif Detection in Top 1000 Modified Positions
@@ -183,7 +215,7 @@ scale_x_discrete(limits = c("All", "Non-GCU", "GCU"))
 
 invisible(dev.off())
 ```
-#### Wilcoxon–Mann–Whitney test
+#### Z-test and Cohen's d
 
 
 ## Modified Fraction Density Plots - Sindbis virus
