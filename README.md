@@ -256,3 +256,31 @@ invisible(dev.off())
 
 
 ## Modified Fraction Density Plots - Sindbis virus
+
+### WIG to BED
+
+```
+WIG_FILE = path_to_wig_file
+# this is the output from Tombo
+BED_FILE = bed_filename
+
+PATH=/usr/local/packages/bedops-2.4.36:"$PATH"
+wig2bed-typical < $WIG_FILE > $BED_FILE 
+```
+
+### Remove positions not in both IVT and JW18 BED files
+
+```
+BED_FILE = path_to_bed_file
+POSITIONS_FILE = output_filename
+FILTERED_FILE = final_filtered_filename
+
+awk '{print $1"\t"$2}' $BED_FILE > $POSITIONS_FILE
+grep -Fwf file1 file2 > common_positions.txt
+#file1 and file2 are the POSITIONS_FILE outputs for both JW18 and IVT
+
+awk 'NR==FNR{a[$2];next} $2 in a{print}' common_positions.txt $BED_FILE > $FILTERED_FILE
+```
+
+### Create file with 3-mer and modified fractions
+
