@@ -319,3 +319,122 @@ rm $tmpfile2
 rm $flanking_tsv
 rm $tmptsv
 ```
+### Run R script to Plot and Calculate 3-mer Sites
+
+Package requirements:
+* ggplot2
+* scales
+
+```
+#!/usr/bin/env Rscript
+
+library(ggplot2)
+library(scales)
+
+args = commandArgs(trailingOnly=TRUE)
+if (length(args)==0) {
+    stop("Please supply a filename", call.=FALSE)
+}
+
+cat("Reading in the data...")
+data1 = read.delim(args[1], header=FALSE, sep="\t")
+data2 = read.delim(args[2], header=FALSE, sep="\t")
+
+cat("\nFormatting the data...\n\n")
+colnames(data1) <- c("Value", "Identifier", "Sample")
+colnames(data2) <- c("Value", "Identifier", "Sample")
+data1$Identifier <- as.factor(data1$Identifier)
+data2$Identifier <- as.factor(data2$Identifier)
+data1$Sample <- as.factor(data1$Sample)
+data2$Sample <- as.factor(data2$Sample)
+
+data1_motif_count <- table(data1$Identifier)
+
+cat(as.character(data1$Sample[1]))
+print(data1_motif_count)
+
+data2_motif_count <- table(data2$Identifier)
+
+cat(as.character(data2$Sample[1]))
+print(data2_motif_count)
+
+
+cat("\nPlotting...")
+
+jpeg("density_plot.jpeg", width=2000, height=1550, units="px")
+
+ggplot(aes(Value, group = Identifier), data = data1) +
+    geom_density(aes(Value, group = Identifier,color = Sample), size=2.5, data = data1) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf),
+    colour = "black", fill = NA) +
+    geom_density(aes(Value, group = Identifier, color = Sample), size=2.5, data = data2) +
+    facet_wrap(~Identifier) +
+    scale_color_manual(name = "Viral\nRNA", values = c("black", "grey55")) +
+    xlab("Methylated Fraction") + theme_linedraw() +
+    theme(axis.title=element_text(size=40),
+    legend.text=element_text(size=45),
+    legend.title=element_text(size=45),
+    strip.text = element_text(size=40, face="bold"),
+    axis.text=element_text(size=30),
+    legend.position="right",
+    strip.background = element_rect(color=NA),
+    panel.spacing = unit(2, "lines")) +
+    coord_cartesian(ylim = c(0, 4)) +
+    scale_y_continuous(labels = label_number(accuracy = 1)) +
+    scale_x_continuous(breaks = c(0,0.25,0.5,0.75,1),
+    labels = c(0,0.25,0.5,0.75,1))
+
+sample_name = as.character(data1$Sample[1])
+filename = paste(sample_name, "_RNA_histogram_density.jpeg", sep="")
+jpeg(filename, width=2000, height=1550, units="px")
+
+ggplot(aes(Value, group = Identifier), data = data1) +
+    geom_histogram(binwidth=0.01, colour = 1, fill = "white") +
+    geom_density(aes(Value, group = Identifier,color = Sample), size=2.5, data = data1) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf),
+    colour = "black", fill = NA) +
+    facet_wrap(~Identifier) +
+    scale_color_manual(name = "Viral\nRNA", values = c("black", "grey55")) +
+    xlab("Methylated Fraction") + theme_linedraw() +
+    theme(axis.title=element_text(size=40),
+    legend.text=element_text(size=45),
+    legend.title=element_text(size=45),
+    strip.text = element_text(size=40, face="bold"),
+    axis.text=element_text(size=30),
+    legend.position="none",
+    strip.background = element_rect(color=NA),
+    panel.spacing = unit(2, "lines")) +
+    coord_cartesian(ylim = c(0, 12)) +
+    scale_y_continuous(labels = label_number(accuracy = 1)) +
+    scale_x_continuous(breaks = c(0,0.25,0.5,0.75,1),
+    labels = c(0,0.25,0.5,0.75,1))
+
+sample_name = as.character(data2$Sample[1])
+filename = paste(sample_name, "_RNA_histogram_density.jpeg", sep="")
+jpeg(filename, width=2000, height=1550, units="px")
+
+ggplot(aes(Value, group = Identifier), data = data2) +
+    geom_histogram(binwidth=0.01, colour = 1, fill = "white") +
+    geom_density(aes(Value, group = Identifier,color = Sample), size=2.5, data = data2) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf),
+    colour = "black", fill = NA) +
+    facet_wrap(~Identifier) +
+    scale_color_manual(name = "Viral\nRNA", values = c("black", "grey55")) +
+    xlab("Methylated Fraction") + theme_linedraw() +
+    theme(axis.title=element_text(size=40),
+    legend.text=element_text(size=45),
+    legend.title=element_text(size=45),
+    strip.text = element_text(size=40, face="bold"),
+    axis.text=element_text(size=30),
+    legend.position="none",
+    strip.background = element_rect(color=NA),
+    panel.spacing = unit(2, "lines")) +
+    coord_cartesian(ylim = c(0, 12)) +
+    scale_y_continuous(labels = label_number(accuracy = 1)) +
+    scale_x_continuous(breaks = c(0,0.25,0.5,0.75,1),
+    labels = c(0,0.25,0.5,0.75,1))
+
+
+invisible(dev.off())
+cat("\n")
+```
