@@ -247,6 +247,7 @@ R script for boxplots:
 ```
 #!/usr/bin/env Rscript
 
+
 library(ggplot2)
 
 args = commandArgs(trailingOnly=TRUE)
@@ -259,23 +260,22 @@ cat("Gathering the data...\n")
 df <- read.delim(args[1], header=FALSE, sep="\t")
 df$V1 <- as.factor(df$V1)
 
-df_nozero <- df[(df$V3 > 0),]
-# removes all '0' modified fractions, so only nonzero fractions are plotted
+df$V2 <- factor(df$V2, levels = c("Non-GCU", "GCU"))
 
-df_nozero$V2 <- factor(df_nozero$V2, levels = c("All", "Non-GCU", "GCU"))
 
 cat("Plotting...\n")
 
-jpeg("plot.jpeg", width=2000, height=550, units="px")
+
+jpeg("plot.jpeg", width=1800, height=550, units="px")
 # create a jpeg file with specified size and units
 
-ggplot(df_nozero, aes(x=V2, y=V3, fill=V2)) +
-geom_boxplot(outlier.size = 0.3) +
-scale_fill_manual(values=c("white","grey70","grey30")) +
+ggplot(df, aes(x=V2, y=V3, fill=V2)) +
+geom_boxplot(outlier.size = 2,lwd=2) +
+scale_fill_manual(values=c("white","grey30")) +
 facet_grid(~factor(V1, levels=c("Bmalayi", "Dananassae",
     "Calbicans", "Ecoli", "JW18_SINV", "SINV_IVT"))) +
 # create separate boxplot for each organism/sample in a specific order
-ylab("Fraction of\nReads Modified") +
+ylab("Methylated Fraction") +
 theme_bw() +
 labs(fill="                                                            ") +
 # use a large space for the legend title to shift the legend to the bottom right
@@ -290,13 +290,84 @@ legend.text=element_text(size=50),
 legend.title=element_text(size=50),
 legend.position = "bottom",
 legend.direction = "horizontal",
-panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +
-scale_x_discrete(limits = c("All", "Non-GCU", "GCU"))
+panel.border = element_rect(colour = "black", fill=NA, size=2)) +
+scale_x_discrete(limits = c("Non-GCU", "GCU")) +
+ylim(0,1.5)
+
 
 invisible(dev.off())
 ```
 #### Z-test and Cohen's d
 
+R script for Z-test
+
+Package requirements:
+* dplyr
+
+```
+library(dplyr)
+
+args = commandArgs(trailingOnly=TRUE)
+
+if (length(args)==0) {
+    stop("Please supply a filename", call.=FALSE)
+}
+
+df1 <- read.delim(args[1],header=FALSE, sep="\t")
+df1$Sample <- as.factor(df1$V1)
+df1$Motif <- as.factor(df1$V2)
+df1$Modified_Fraction <- df1$V3
+
+df2 <- read.delim(args[2],header=FALSE, sep="\t")
+df2$Sample <- as.factor(df2$V1)
+df2$Motif <- as.factor(df2$V2)
+df2$Modified_Fraction <- df2$V3
+
+delta_0 <- 0
+sigma_sq_1 <- var(df1$Modified_Fraction)
+sigma_sq_2 <- var(df2$Modified_Fraction)
+
+n_1 <- length(df1$Modified_Fraction)
+n_2 <- length(df2$Modified_Fraction)
+
+z_stat <- (mean(df1$Modified_Fraction) - mean(df2$Modified_Fraction) - delta_0) /
+    sqrt(sigma_sq_1 / n_1 + sigma_sq_2 / n_2)
+
+print(paste0("z stat: ", z_stat))
+
+pv <- 2*pnorm(q=abs(z_stat),lower.tail=FALSE,log.p=TRUE)
+print(paste0("Log p-value: ",pv))
+
+```
+R script for Cohen's d:
+
+Package requirements:
+* psych
+
+```
+#!/usr/bin/env Rscript
+
+library(psych)
+
+args = commandArgs(trailingOnly=TRUE)
+if (length(args)==0) {
+    stop("Please supply a filename", call.=FALSE)
+}
+
+cat("Gathering the data...\n")
+
+df1 <- read.delim(args[1], header=FALSE, sep="\t")
+
+df2 <- read.delim(args[2], header=FALSE, sep="\t")
+
+#t.test(df1$V3, df2$V3, paired=FALSE)
+# testing on the third column of the dataframe, can be changed
+
+df_all <- rbind(df1, df2)
+df_all$V1 = NULL
+
+cohen.d(df_all, "V2", alpha=.05)
+```
 
 ## Modified Fraction Density Plots - Sindbis virus
 
