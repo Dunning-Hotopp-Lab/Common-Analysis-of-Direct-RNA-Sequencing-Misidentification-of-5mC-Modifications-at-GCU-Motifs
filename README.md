@@ -97,14 +97,57 @@ samtools view $BAM_OUT | wc -l
 
 ## Tombo Modification Detection - Alternative Model
 
+### ONT FAST5 API: Multi-to-Single FAST5
+Tombo requires single FAST5 format
+```
+FAST5_DIR=path_to_fast5_files
+
+OUTPUT_DIR=output_path
+
+multi_to_single_fast5 -i "$FAST5_DIR" -s "$OUTPUT_DIR"
+```
+### Tombo Reannotate
+Reannotate single FAST5 files with basecalls from FASTQ
+```
+FAST5_DIR=path_to_single_fast5_files
+FASTQ_FILE=/path_to_fastq_file
+
+tombo preprocess annotate_raw_with_fastqs --overwrite --fast5-basedir "$FAST5_DIR" --fastq-filenames "$FASTQ_FILE"
+```
+### Tombo Resquiggle
+Resquiggle FAST5 files with raw signal
+```
+REF_TRANSCRIPT_FNA=path_to_reference
+
+FAST5_DIR=path_to_reannotated_fast5
+
+tombo resquiggle --overwrite --rna "$FAST5_DIR" "$REF_TRANSCRIPT_FNA" --num-most-common-errors 5 --ignore-read-locks
+```
+
+### Tombo Detect Modifications
+Detect modifications using the Alternative Model
+```
+FAST5_DIR=path_to_resquiggled_fast5
+STATS_PREFIX=prefix_for_stats_files
+
+tombo detect_modifications alternative_model --fast5-basedirs "$FAST5_DIR" --statistics-file-basename "$STATS_PREFIX" --per-read-statistics-basename "$STATS_PREFIX" --alternate-bases 5mC
+```
+
 ## Motif Detection in Top 1000 Modified Positions
+
+### Tombo Output Significant Regions
+```
+REF=path_to_reference
+FAST5_DIR=path_to_resquiggled_fast5
+STATS_FILE=path_to_stats_file (output from detect_modifications)
+
+tombo text_output signif_sequence_context --fast5-basedirs "$FAST5_DIR" --statistics-filename HEK293_SRR13261194.5mC_base_detection.5mC.tombo.stats --num-regions 1000 --num-bases 10
+```
 
 #### Change all T's (from Tombo output) to U's in fasta:
 ```
 perl -pe 'tr/tT/uU/ unless(/>/)' < file.fasta > file.RNA.fasta
 ```
-
-
 
 ## Modified Fraction Boxplots
 #### Tombo - Dampened Fraction of Modified Reads:
