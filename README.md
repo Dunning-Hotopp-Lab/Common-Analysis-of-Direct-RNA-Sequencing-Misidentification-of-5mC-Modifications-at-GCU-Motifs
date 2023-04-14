@@ -145,6 +145,7 @@ tombo text_output signif_sequence_context --fast5-basedirs "$FAST5_DIR" --statis
 ```
 
 #### Change all T's (from Tombo output) to U's in fasta:
+This creates an RNA file for use with the MEME Suite website
 ```
 perl -pe 'tr/tT/uU/ unless(/>/)' < file.fasta > file.RNA.fasta
 ```
