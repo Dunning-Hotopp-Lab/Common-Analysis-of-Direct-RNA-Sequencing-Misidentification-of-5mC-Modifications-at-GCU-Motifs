@@ -216,7 +216,6 @@ comm -2 -3 <(sort $ALL_FILE) <(sort $GCU_FILE) > $PREFIX.nonGCU.dampened_fractio
 
 Create BED files formatted for boxplots from filtered files by adding a column for the motif
 ```
-for i in *all.dampened_fraction_filtered.bed; do awk -v motif="All" '{print motif"\t"$4}' $i > $i.formatted; done
 for i in *nonGCU.dampened_fraction_filtered.bed; do awk -v motif="Non-GCU" '{print motif"\t"$4}' $i > $i.formatted; done
 for i in *_GCU.dampened_fraction_filtered.bed; do awk -v motif="GCU" '{print motif"\t"$4}' $i > $i.formatted; done
 ```
@@ -239,7 +238,8 @@ wc -l final*
 #### Plot Modified Fractions
 Command to run R script on final concatenated file:
 ```
-~/scripts/boxplot_mods_multisample.r modified_fractions_all.tsv
+~/scripts/boxplot_mods_2groups.r modified_fractions_all.tsv
+# output file from previous step
 ```
 Package requirements:
 * ggplot2
@@ -299,6 +299,12 @@ ylim(0,1.5)
 invisible(dev.off())
 ```
 #### Z-test and Cohen's d
+Command to run Z-test script:
+```
+GCU_BED = path_to_final_GCU_bed_file
+NONGCU_BED = path_to_final_nonGCU_file
+~/scripts/ztest.r $GCU_BED $NONGCU_BED
+```
 
 R script for Z-test
 
@@ -340,7 +346,13 @@ pv <- 2*pnorm(q=abs(z_stat),lower.tail=FALSE,log.p=TRUE)
 print(paste0("Log p-value: ",pv))
 
 ```
-R script for Cohen's d:
+Command to run Cohen's d script:
+```
+GCU_BED = path_to_final_GCU_bed_file
+NONGCU_BED = path_to_final_nonGCU_file
+~/scripts/ttest.r $GCU_BED $NONGCU_BED
+```
+R script for Cohen's d
 
 Package requirements:
 * psych
@@ -407,7 +419,15 @@ awk 'NR==FNR{a[$2];next} $2 in a{print}' common_positions.txt $NOZERO_BED > $FIL
 
 ### Create file with 3-mer and modified fractions
 
-#### Bash script to create 3-mer file (create_3mer_fraction_file.sh):
+#### Bash script to create 3-mer file (create_3mer_fraction_file.sh)
+Command to run bash script:
+```
+FILTERED_FILE = path_to_filtered_bed_file
+REF = path_to_reference_fasta
+NAME = sample_name ("Native" and "IVT" in this case)
+~/scripts/create_3mer_fraction_file.sh $FILTERED_FILE $REF $NAME
+```
+create_3mer_fraction_file.sh script:
 ```
 #!/usr/bin/env bash
 
@@ -435,6 +455,13 @@ rm $flanking_tsv
 rm $tmptsv
 ```
 ### Run R script to Plot and Calculate 3-mer Sites
+Command to run script:
+```
+FRACTION_FILE_1 = path_to_first_3mer_fraction_file (output from create_3mer_fraction_file.sh script)
+FRACTION_FILE_2 = path_to_second_3mer_fraction_file
+
+~/scripts/density_mods.r $FRACTION_FILE_1 $FRACTION_FILE_2
+```
 
 Package requirements:
 * ggplot2
