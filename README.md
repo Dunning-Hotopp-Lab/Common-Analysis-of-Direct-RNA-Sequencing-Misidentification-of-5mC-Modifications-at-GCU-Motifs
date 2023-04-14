@@ -268,18 +268,26 @@ PATH=/usr/local/packages/bedops-2.4.36:"$PATH"
 wig2bed-typical < $WIG_FILE > $BED_FILE 
 ```
 
-### Remove positions not in both IVT and JW18 BED files
+### Remove positions with a fraction of 0.000000 in both IVT and JW18 BED files
 
 ```
 BED_FILE = path_to_bed_file
+NOZERO_BED = output_filename
+awk '{if($5 > 0) print}' $BED_FILE > $NOZERO_BED
+```
+
+### Remove positions not in both IVT and JW18 BED files
+
+```
+NOZERO_BED = path_to_nozero_bed_file
 POSITIONS_FILE = output_filename
 FILTERED_FILE = final_filtered_filename
 
-awk '{print $1"\t"$2}' $BED_FILE > $POSITIONS_FILE
+awk '{print $1"\t"$2}' $NOZERO_BED > $POSITIONS_FILE
 grep -Fwf file1 file2 > common_positions.txt
 #file1 and file2 are the POSITIONS_FILE outputs for both JW18 and IVT
 
-awk 'NR==FNR{a[$2];next} $2 in a{print}' common_positions.txt $BED_FILE > $FILTERED_FILE
+awk 'NR==FNR{a[$2];next} $2 in a{print}' common_positions.txt $NOZERO_BED > $FILTERED_FILE
 ```
 
 ### Create file with 3-mer and modified fractions
@@ -289,7 +297,7 @@ awk 'NR==FNR{a[$2];next} $2 in a{print}' common_positions.txt $BED_FILE > $FILTE
 #!/usr/bin/env bash
 
 #this script requires 3 arguments:
-## first argument is the path to the bed file of modified fractions
+## first argument is the path to the bed file of modified fractions (FILTERED_FILE)
 ## second argument is the path to the reference fasta
 ## third argument is the sample name
 
