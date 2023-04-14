@@ -227,6 +227,7 @@ for i in Dananassae*.formatted; do awk -v sample="Dananassae" '{if($2>0) print s
 for i in 20220727_Ecoli*.formatted; do awk -v sample="Ecoli" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
 for i in 20220512_SINV_IVT*.formatted; do awk -v sample="SINV_IVT" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
 for i in 20181026_JW18*.formatted; do awk -v sample="JW18_SINV" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
+# these will be the files used for the Z-test and Cohen's d scripts
 
 cat final* > modified_fractions_all.tsv
 ```
@@ -301,7 +302,8 @@ invisible(dev.off())
 #### Z-test and Cohen's d
 Command to run Z-test script:
 ```
-GCU_BED = path_to_final_GCU_bed_file
+GCU_BED = path_to_final_GCU_file
+# the 'final' output from the previous "Add a column with the sample name, then combine all 'final' files in a single file for R" step
 NONGCU_BED = path_to_final_nonGCU_file
 ~/scripts/ztest.r $GCU_BED $NONGCU_BED
 ```
