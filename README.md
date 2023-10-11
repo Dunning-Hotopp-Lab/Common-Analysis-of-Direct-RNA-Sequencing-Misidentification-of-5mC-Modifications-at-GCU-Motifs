@@ -178,7 +178,7 @@ Genes/regions where reads did not map will have blank space after the WIG header
 ```
 PATH=/usr/local/packages/bedops-2.4.36:"$PATH"
 
-for i in *dampened_fraction_modified_reads.plus.wig; do sed -i '$!N;/=.*\n$/d;P;D' $i; done
+for i in *dampened_fraction*.plus.wig; do sed -i '$!N;/=.*\n$/d;P;D' $i; done
 # the wig header has "=" in it, so this command finds lines with "=", and if the next line is blank, removes both
 for i in *dampened_fraction*.plus.wig; do wig2bed-typical < $i > $i.bed; done
 
@@ -199,7 +199,7 @@ FILT_COV=filtered_valid_coverage_file
 DAMP_FRAC=dampened_fraction_file
 FILT_FRAC=filtered_output_name
 
-awk 'NR==FNR{a[$2]=1;next}a[$2]' $FILT_COV $DAMP_FRAC > $FILT_FRAC
+awk 'NR==FNR{a[$4]=1;next}a[$4]' $FILT_COV $DAMP_FRAC > $FILT_FRAC
 ```
 
 Create a file with Non-GCU motifs
