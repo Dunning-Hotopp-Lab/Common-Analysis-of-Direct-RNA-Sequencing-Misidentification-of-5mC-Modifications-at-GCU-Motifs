@@ -227,6 +227,10 @@ for i in Dananassae*.formatted; do awk -v sample="Dananassae" '{if($2>0) print s
 for i in 20220727_Ecoli*.formatted; do awk -v sample="Ecoli" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
 for i in 20220512_SINV_IVT*.formatted; do awk -v sample="SINV_IVT" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
 for i in 20181026_JW18*.formatted; do awk -v sample="JW18_SINV" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in a549_DRS*.formatted; do awk -v sample="A549_native" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in a549_IVT*.formatted; do awk -v sample="A549_IVT" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in SARS_CoV2_IVT_downsampled*.formatted; do awk -v sample="SARS_CoV2_IVT" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
+for i in curlcake*.formatted; do awk -v sample="curlcake" '{if($2>0) print sample"\t"$1"\t"$2}' $i > final.$i; done
 # these will be the files used for the Z-test and Cohen's d scripts
 
 cat final* > modified_fractions_all.tsv
