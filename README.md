@@ -193,20 +193,18 @@ ALL OTHERS (B. malayi, D. ananassae, C. albicans, E. coli): Remove lines in vali
 ```
 for i in *.valid_coverage.plus.wig.bed; do awk '{if($5>99) print}' $i > $i.filtered; done
 ```
-Filter each bed file by valid_coverage file
+Filter each bed file by valid_coverage file after formatting for filtering on 'chromosome:position'
 ```
-FILT_COV=filtered_valid_coverage_file
+for i in *.bed*; do awk '{print $1":"$2"\t"$5}' $i > $i.columns; done
+
 DAMP_FRAC=dampened_fraction_file
 FILT_FRAC=filtered_output_name
 
-awk 'NR==FNR{a[$4]=1;next}a[$4]' $FILT_COV $DAMP_FRAC > $FILT_FRAC
+awk 'NR==FNR{a[$1]=1;next}a[$1]' *valid_coverage*.columns $DAMP_FRAC > $FILT_FRAC
 ```
 
 Create a file with Non-GCU motifs
 ```
-for i in *filtered.bed; do awk '{print $1"\t"$2"\t"$3"\t"$5}' $i > $i.4col && mv $i.4col $i; done
-# remove the 4th column since it won't match between the 2 files (just corresponds to row number)
-
 ALL_FILE=all_motifs_file
 GCU_FILE=GCU_motif_file
 PREFIX=output_file_prefix
@@ -216,8 +214,8 @@ comm -2 -3 <(sort $ALL_FILE) <(sort $GCU_FILE) > $PREFIX.nonGCU.dampened_fractio
 
 Create BED files formatted for boxplots from filtered files by adding a column for the motif
 ```
-for i in *nonGCU.dampened_fraction_filtered.bed; do awk -v motif="Non-GCU" '{print motif"\t"$4}' $i > $i.formatted; done
-for i in *_GCU.dampened_fraction_filtered.bed; do awk -v motif="GCU" '{print motif"\t"$4}' $i > $i.formatted; done
+for i in *nonGCU.dampened_fraction_filtered.bed; do awk -v motif="Non-GCU" '{print motif"\t"$2}' $i > $i.formatted; done
+for i in *_GCU.dampened_fraction_filtered.bed; do awk -v motif="GCU" '{print motif"\t"$2}' $i > $i.formatted; done
 ```
 Add a column with the sample name, then combine all 'final' files in a single file for R:
 ```
