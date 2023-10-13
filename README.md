@@ -185,11 +185,11 @@ for i in *dampened_fraction*.plus.wig; do wig2bed-typical < $i > $i.bed; done
 for i in *valid_coverage.plus.wig; do sed -i '$!N;/=.*\n$/d;P;D' $i; done
 for i in *valid_coverage.plus.wig; do wig2bed-typical < $i > $i.bed; done
 ```
-VIRUS (low depth samples): Remove lines in valid_coverage that have < 10 in the 5th column (depth column)
+SINDBIS VIRUS (low depth samples): Remove lines in valid_coverage that have < 10 in the 5th column (depth column)
 ```
 for i in *.valid_coverage.plus.wig.bed; do awk '{if($5>9) print}' $i > $i.filtered; done
 ```
-ALL OTHERS (B. malayi, D. ananassae, C. albicans, E. coli): Remove lines in valid_coverage that have < 100 in the 5th column
+ALL OTHERS (B. malayi, D. ananassae, C. albicans, E. coli, A549, SARS CoV2, curlcake): Remove lines in valid_coverage that have < 100 in the 5th column
 ```
 for i in *.valid_coverage.plus.wig.bed; do awk '{if($5>99) print}' $i > $i.filtered; done
 ```
