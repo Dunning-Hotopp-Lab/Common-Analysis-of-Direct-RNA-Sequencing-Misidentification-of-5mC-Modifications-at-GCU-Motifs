@@ -198,9 +198,11 @@ Filter each bed file by valid_coverage file after formatting for filtering on 'c
 for i in *.bed*; do awk '{print $1":"$2"\t"$5}' $i > $i.columns; done
 
 DAMP_FRAC=dampened_fraction_file
+# file ending in '.columns' from previous step
 FILT_FRAC=filtered_output_name
+# use prefix_GCU.dampened_fraction_filtered.bed format for further steps to work properly
 
-awk 'NR==FNR{a[$1]=1;next}a[$1]' *valid_coverage*.columns $DAMP_FRAC > $FILT_FRAC
+awk 'NR==FNR{a[$1]=1;next}a[$1]' *valid_coverage*.filtered.columns $DAMP_FRAC > $FILT_FRAC
 ```
 
 Create a file with Non-GCU motifs
