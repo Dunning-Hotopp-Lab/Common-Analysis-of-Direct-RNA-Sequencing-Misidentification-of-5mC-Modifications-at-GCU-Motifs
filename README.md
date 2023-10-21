@@ -587,3 +587,84 @@ ggplot(aes(Value, group = Identifier), data = data2) +
 invisible(dev.off())
 cat("\n")
 ```
+
+## Modified Fraction Density Plots - All other samples
+
+### Reformat filtered dampened fraction file
+
+```
+#first move all filtered dampened fraction (all sites) files filtered for depth >100 (one per sample) to the same directory to reformat them all at once
+# make sure all files end in "filtered.bed" for the command to work properly
+
+for i in *filtered.bed; do awk -F : '{print $1"\t"$2}' $i | awk '{print $1"\t"$2"\t"($2+1)"\t"".""\t"$3}' > $i.reformat; done
+# this will split the first column back into 2 separate columns and format as a bed file for further steps
+```
+
+### Remove positions with a fraction of 0.000000
+
+```
+for i in *reformat; do awk '{if($5 > 0) print}' $i > $i.nozero; done
+# uses reformatted file from previous step
+```
+### Filter "modified_fractions_all.tsv" file output from boxplot files for GCU only
+```
+awk '{if($2=="GCU") print}' modified_fractions_all.tsv > modified_fractions_all_GCU.tsv
+```
+### Remove Sindbis virus samples from GCU fractions file
+```
+awk '{if($1!="JW18_SINV") print}' modified_fractions_all_GCU.tsv | awk '{if($1!="SINV_IVT") print}' > final_modified_fractions_all_GCU.tsv
+```
+
+### Create file with 3-mer and modified fractions
+
+#### Bash script to create 3-mer file (create_3mer_fraction_file.sh)
+Command to run bash script:
+```
+NOZERO_FILE = file output from previous step
+REF = path_to_reference_fasta
+NAME = sample_name
+3MER_FILE = output name for 3-mer
+~/scripts/create_3mer_fraction_file.sh $NOZERO_FILE $REF $NAME > $3MER_FILE
+
+# make sure there are no dashes in gene names for both reference and NOZERO_FILE
+# if there are dashes, these can be replaced with underscores
+```
+create_3mer_fraction_file.sh script:
+```
+#!/usr/bin/env bash
+#this script requires 3 arguments:
+## first argument is the path to the bed file of modified fractions (FILTERED_FILE)
+## second argument is the path to the reference fasta
+## third argument is the sample name
+
+tmpfile=$(mktemp --suffix=.txt)
+tmpfile2=$(mktemp --suffix=.txt)
+flanking_tsv=$(mktemp --suffix=.tsv)
+tmptsv=$(mktemp --suffix=.tsv)
+
+awk '{print $1">"$2":"$3"<"$4"+"$5}' $1 > $tmpfile
+
+python ~/scripts/flanking_nt_intervals.py $tmpfile > $tmpfile2
+
+bedtools getfasta -fi $2 -bed $tmpfile2 -tab | awk -F ":" 'OFS="\t" {print $1,$2,$3}' | awk -F "-" 'OFS="\t" {print $1,$2,$3,$4}' > $tmptsv
+
+join -j 2 -o 1.5,2.4 <(sort -k 1b,2 $tmpfile2) <(sort -k 1b,2 $tmptsv) | perl -pe 'tr/tT/uU/' | awk -v myvar=$3 '{print $1"\t"$2"\t"myvar}'
+
+rm $tmpfile
+rm $tmpfile2
+rm $flanking_tsv
+rm $tmptsv
+```
+### Run R script to Plot and Calculate 3-mer Sites
+Command to run script:
+```
+FRACTION_FILE_1 = path_to_first_3mer_fraction_file (output from create_3mer_fraction_file.sh script)
+FRACTION_FILE_2 = path_to_second_3mer_fraction_file
+
+~/scripts/density_mods.r $FRACTION_FILE_1 $FRACTION_FILE_2
+```
+
+Package requirements:
+* ggplot2
+* scales
+
