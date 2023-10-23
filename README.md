@@ -94,6 +94,15 @@ gff2bed < $GFF_RRNA > $BED
 samtools view -L $BED $BAM -o $BAM_OUT
 samtools view $BAM_OUT | wc -l
 ```
+### FASTA stats
+
+```
+seqkit fx2tab -g <FASTA> | awk 'BEGIN{FS="\t"}{ total += $4 } END { print total/NR }'
+# output GC content of a fasta file
+
+perl -pe '/^>/ ? print "\n" : chomp' <FASTA> | grep -o "GCT" | wc -l
+# output GCU sites in a fasta file
+```
 
 ## Tombo Modification Detection - Alternative Model
 
