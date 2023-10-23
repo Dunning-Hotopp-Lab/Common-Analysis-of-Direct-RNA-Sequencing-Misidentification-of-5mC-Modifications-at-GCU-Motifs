@@ -476,7 +476,7 @@ Command to run script:
 FRACTION_FILE_1 = path_to_first_3mer_fraction_file (output from create_3mer_fraction_file.sh script)
 FRACTION_FILE_2 = path_to_second_3mer_fraction_file
 
-~/scripts/density_mods.r $FRACTION_FILE_1 $FRACTION_FILE_2
+~/scripts/SINV_density_histogram_mods.r $FRACTION_FILE_1 $FRACTION_FILE_2
 ```
 
 Package requirements:
@@ -519,81 +519,85 @@ print(data2_motif_count)
 
 cat("\nPlotting...")
 
-jpeg("density_plot.jpeg", width=2000, height=1550, units="px")
-
 ggplot(aes(Value, group = Identifier), data = data1) +
-    geom_density(aes(Value, group = Identifier,color = Sample), size=2.5, data = data1) +
+    geom_density(aes(Value, group = Identifier,color = Sample), size=1, data = data1) +
     geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf),
     colour = "black", fill = NA) +
-    geom_density(aes(Value, group = Identifier, color = Sample), size=2.5, data = data2) +
+    geom_density(aes(Value, group = Identifier, color = Sample), size=1, data = data2) +
     facet_wrap(~Identifier) +
     scale_color_manual(name = "Viral\nRNA", values = c("black", "grey55")) +
     xlab("Methylated Fraction") + theme_linedraw() +
-    theme(axis.title=element_text(size=40),
-    legend.text=element_text(size=45),
-    legend.title=element_text(size=45),
-    strip.text = element_text(size=40, face="bold"),
-    axis.text=element_text(size=30),
+    theme(
+    panel.grid.major = element_line(colour = "grey"), panel.grid.minor = element_blank(),
+    axis.title=element_blank(),
+    legend.text=element_text(size=11),
+    legend.title=element_text(size=11),
+    strip.text = element_text(size=10, face="bold"),
+    axis.text=element_text(size=8),
     legend.position="right",
     strip.background = element_rect(color=NA),
-    panel.spacing = unit(2, "lines")) +
+    panel.spacing = unit(0.5, "lines")) +
     coord_cartesian(ylim = c(0, 4)) +
     scale_y_continuous(labels = label_number(accuracy = 1)) +
     scale_x_continuous(breaks = c(0,0.25,0.5,0.75,1),
     labels = c(0,0.25,0.5,0.75,1))
 
+ggsave("density_plot.svg", width = 7, height = 6, dpi = 600)
+
 sample_name = as.character(data1$Sample[1])
-filename = paste(sample_name, "_RNA_histogram_density.jpeg", sep="")
-jpeg(filename, width=2000, height=1550, units="px")
+filename1 = paste(sample_name, "_RNA_histogram.svg", sep="")
 
 ggplot(aes(Value, group = Identifier), data = data1) +
-    geom_histogram(binwidth=0.01, colour = 1, fill = "white") +
-    geom_density(aes(Value, group = Identifier,color = Sample), size=2.5, data = data1) +
+    geom_histogram(binwidth=0.025, colour = 1, fill = "white") +
     geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf),
     colour = "black", fill = NA) +
     facet_wrap(~Identifier) +
     scale_color_manual(name = "Viral\nRNA", values = c("black", "grey55")) +
     xlab("Methylated Fraction") + theme_linedraw() +
-    theme(axis.title=element_text(size=40),
-    legend.text=element_text(size=45),
-    legend.title=element_text(size=45),
-    strip.text = element_text(size=40, face="bold"),
-    axis.text=element_text(size=30),
+    theme(
+    axis.title=element_blank(),
+    panel.grid.major = element_line(colour = "grey"), panel.grid.minor = element_blank(),
+    legend.text=element_text(size=11),
+    legend.title=element_text(size=11),
+    strip.text = element_text(size=10, face="bold"),
+    axis.text=element_text(size=8),
     legend.position="none",
     strip.background = element_rect(color=NA),
-    panel.spacing = unit(2, "lines")) +
-    coord_cartesian(ylim = c(0, 12)) +
+    panel.spacing = unit(0.5, "lines")) +
+    coord_cartesian(ylim = c(0, 13)) +
     scale_y_continuous(labels = label_number(accuracy = 1)) +
     scale_x_continuous(breaks = c(0,0.25,0.5,0.75,1),
     labels = c(0,0.25,0.5,0.75,1))
+
+ggsave(filename1, width = 7, height = 6.2, dpi = 600)
 
 sample_name = as.character(data2$Sample[1])
-filename = paste(sample_name, "_RNA_histogram_density.jpeg", sep="")
-jpeg(filename, width=2000, height=1550, units="px")
+filename2 = paste(sample_name, "_RNA_histogram.svg", sep="")
 
 ggplot(aes(Value, group = Identifier), data = data2) +
-    geom_histogram(binwidth=0.01, colour = 1, fill = "white") +
-    geom_density(aes(Value, group = Identifier,color = Sample), size=2.5, data = data2) +
+    geom_histogram(binwidth=0.025, colour = 1, fill = "white") +
     geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf),
     colour = "black", fill = NA) +
     facet_wrap(~Identifier) +
     scale_color_manual(name = "Viral\nRNA", values = c("black", "grey55")) +
     xlab("Methylated Fraction") + theme_linedraw() +
-    theme(axis.title=element_text(size=40),
-    legend.text=element_text(size=45),
-    legend.title=element_text(size=45),
-    strip.text = element_text(size=40, face="bold"),
-    axis.text=element_text(size=30),
+    theme(
+    axis.title=element_blank(),
+    panel.grid.major = element_line(colour = "grey"), panel.grid.minor = element_blank(),
+    legend.text=element_text(size=11),
+    legend.title=element_text(size=11),
+    strip.text = element_text(size=10, face="bold"),
+    axis.text=element_text(size=8),
     legend.position="none",
     strip.background = element_rect(color=NA),
-    panel.spacing = unit(2, "lines")) +
-    coord_cartesian(ylim = c(0, 12)) +
+    panel.spacing = unit(0.5, "lines")) +
+    coord_cartesian(ylim = c(0, 14)) +
     scale_y_continuous(labels = label_number(accuracy = 1)) +
     scale_x_continuous(breaks = c(0,0.25,0.5,0.75,1),
     labels = c(0,0.25,0.5,0.75,1))
 
+ggsave(filename2, width = 7, height = 6.2, dpi = 600)
 
-invisible(dev.off())
 cat("\n")
 ```
 
@@ -615,15 +619,6 @@ for i in *filtered.bed; do awk -F : '{print $1"\t"$2}' $i | awk '{print $1"\t"$2
 for i in *reformat; do awk '{if($5 > 0) print}' $i > $i.nozero; done
 # uses reformatted file from previous step
 ```
-### Filter "modified_fractions_all.tsv" file output from boxplot files for GCU only
-```
-awk '{if($2=="GCU") print}' modified_fractions_all.tsv > modified_fractions_all_GCU.tsv
-```
-### Remove Sindbis virus samples from GCU fractions file
-```
-awk '{if($1!="JW18_SINV") print}' modified_fractions_all_GCU.tsv | awk '{if($1!="SINV_IVT") print}' > final_modified_fractions_all_GCU.tsv
-```
-
 ### Create file with 3-mer and modified fractions
 
 #### Bash script to create 3-mer file (create_3mer_fraction_file.sh)
@@ -667,51 +662,64 @@ rm $tmptsv
 ### Run R script to Plot and Calculate 3-mer Sites
 Command to run script:
 ```
-FRACTION_FILE_1 = path_to_first_3mer_fraction_file (output from create_3mer_fraction_file.sh script)
-FRACTION_FILE_2 = path_to_second_3mer_fraction_file
+FRACTION_FILE = path_to_3mer_fraction_file (output from create_3mer_fraction_file.sh script)
 
-~/scripts/density_mods.r $FRACTION_FILE_1 $FRACTION_FILE_2
+~/scripts/histogram_methyl_fraction_individual.r $FRACTION_FILE
 ```
 
 Package requirements:
 * ggplot2
 * scales
 
-
-## Tombo "Sample Compare" vs "Alternative Model" - Sindbis virus
-
-### Tombo Sample Compare KS test
 ```
+#!/usr/bin/env Rscript
+
+library(ggplot2)
+library(scales)
+
+args = commandArgs(trailingOnly=TRUE)
+if (length(args)==0) {
+    stop("Please supply a filename", call.=FALSE)
+}
+
+cat("Reading in the data...")
+data1 = read.delim(args[1], header=FALSE, sep="\t")
+
+cat("\nFormatting the data...\n\n")
+colnames(data1) <- c("Value", "Identifier", "Sample")
+data1$Identifier <- as.factor(data1$Identifier)
+data1$Sample <- as.factor(data1$Sample)
+
+data1_motif_count <- table(data1$Identifier)
+
+print(data1_motif_count)
+
+cat("\nPlotting...")
+
+ggplot(aes(Value, group = Identifier), data = data1) +
+    geom_histogram(binwidth=0.025, colour = 1, fill = "white") +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf),
+    colour = "black", fill = NA) +
+    facet_wrap(~Identifier, scales="free") +
+    scale_color_manual(name = "Sample:", values = c("black", "grey55")) +
+    xlab("Methylated Fraction") + theme_linedraw() +
+    theme(
+    panel.grid.major = element_line(colour = "grey"), panel.grid.minor = element_blank(),
+    axis.title=element_blank(),
+    legend.text=element_text(size=11),
+    legend.title=element_text(size=11),
+    strip.text = element_text(size=10, face="bold"),
+    axis.text=element_text(size=8),
+    legend.position="right",
+    strip.background = element_rect(color=NA),
+    panel.spacing = unit(0.5, "lines")) +
+    scale_y_continuous(labels = label_number(accuracy = 1)) +
+    scale_x_continuous(breaks = c(0,0.25,0.5,0.75,1),
+    labels = c(0,0.25,0.5,0.75,1))
+
+sample_name = as.character(data1$Sample[1])
+filename1 = paste(sample_name, "_histogram.svg", sep="")
+ggsave(filename1, width = 7, height = 6, dpi = 600)
+
+cat("\n")
 ```
-### WIG to BED
-
-```
-WIG_FILE = path_to_wig_file
-# outputs from tombo - dampened fraction modified reads and ks statistic
-BED_FILE = bed_filename
-
-PATH=/usr/local/packages/bedops-2.4.36:"$PATH"
-wig2bed-typical < $WIG_FILE > $BED_FILE 
-```
-
-### Only keep genomic positions in KS test bed file (from Sample Compare)
-
-```
-ALT_BED = alt_model_bed_files
-# one for each virus sample, JW18 and IVT
-KS_BED = ks_test_bed_file
-ALT_POSITIONS = positions_in_alt_bed_files
-KS_POSITIONS = positions_in_ks_bed_file
-FILTERED_FILE = final_filtered_filename
-# there will be 3 of these by the end
-
-awk '{print $1"\t"$2}' $ALT_BED > $ALT_POSITIONS
-awk '{print $1"\t"$2}' $KS_BED > $KS_POSITIONS
-grep -Fwf $ALT_POSITIONS $ALT_POSITIONS > common_positions.txt
-# ALT_POSITIONS are JW18 and IVT position files
-grep -Fwf $KS_POSITIONS $ALT_POSITIONS > final_positions.txt
-
-awk 'NR==FNR{a[$2];next} $2 in a{print}' final_positions.txt $ALT_BED > $FILTERED_FILE
-awk 'NR==FNR{a[$2];next} $2 in a{print}' final_positions.txt $KS_BED > $FILTERED_FILE
-```
-
