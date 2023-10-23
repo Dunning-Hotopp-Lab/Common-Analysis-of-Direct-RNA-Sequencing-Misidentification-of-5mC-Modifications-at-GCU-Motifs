@@ -668,3 +668,41 @@ Package requirements:
 * ggplot2
 * scales
 
+
+## Tombo "Sample Compare" vs "Alternative Model" - Sindbis virus
+
+### Tombo Sample Compare KS test
+```
+```
+### WIG to BED
+
+```
+WIG_FILE = path_to_wig_file
+# outputs from tombo - dampened fraction modified reads and ks statistic
+BED_FILE = bed_filename
+
+PATH=/usr/local/packages/bedops-2.4.36:"$PATH"
+wig2bed-typical < $WIG_FILE > $BED_FILE 
+```
+
+### Only keep genomic positions in KS test bed file (from Sample Compare)
+
+```
+ALT_BED = alt_model_bed_files
+# one for each virus sample, JW18 and IVT
+KS_BED = ks_test_bed_file
+ALT_POSITIONS = positions_in_alt_bed_files
+KS_POSITIONS = positions_in_ks_bed_file
+FILTERED_FILE = final_filtered_filename
+# there will be 3 of these by the end
+
+awk '{print $1"\t"$2}' $ALT_BED > $ALT_POSITIONS
+awk '{print $1"\t"$2}' $KS_BED > $KS_POSITIONS
+grep -Fwf $ALT_POSITIONS $ALT_POSITIONS > common_positions.txt
+# ALT_POSITIONS are JW18 and IVT position files
+grep -Fwf $KS_POSITIONS $ALT_POSITIONS > final_positions.txt
+
+awk 'NR==FNR{a[$2];next} $2 in a{print}' final_positions.txt $ALT_BED > $FILTERED_FILE
+awk 'NR==FNR{a[$2];next} $2 in a{print}' final_positions.txt $KS_BED > $FILTERED_FILE
+```
+
