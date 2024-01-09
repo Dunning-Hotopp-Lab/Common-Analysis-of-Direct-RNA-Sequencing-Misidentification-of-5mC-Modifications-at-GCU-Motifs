@@ -4,7 +4,7 @@ Kaylee Watson<br />
 
 ## Table of Contents
 
-[• Basecalling ONT Reads with Guppy](https://github.com/kayleewatson/Common-Analysis-of-Direct-RNA-SequencinG-CUrrently-leads-to-Misidentification-of-5-Methylcytosine/edit/main/README.md#basecalling-ont-reads-with-guppy)<br />
+[• Basecalling ONT Reads with Guppy](https://github.com/Dunning-Hotopp-Lab/Common-Analysis-of-Direct-RNA-Sequencing-Misidentification-of-5mC-Modifications-at-GCU-Motifs?tab=readme-ov-file#basecalling-ont-reads-with-guppy)<br />
 [• Mapping to Transcriptome References](https://github.com/kayleewatson/Common-Analysis-of-Direct-RNA-SequencinG-CUrrently-leads-to-Misidentification-of-5-Methylcytosine/edit/main/README.md#mapping-to-transcriptome-references)<br />
 [• Sequencing Stats](https://github.com/kayleewatson/Common-Analysis-of-Direct-RNA-SequencinG-CUrrently-leads-to-Misidentification-of-5-Methylcytosine/edit/main/README.md#sequencing-stats)<br />
 [• Tombo Modification Detection - Alternative Model](https://github.com/kayleewatson/Common-Analysis-of-Direct-RNA-SequencinG-CUrrently-leads-to-Misidentification-of-5-Methylcytosine/edit/main/README.md#tombo-modification-detection---alternative-model)<br />
